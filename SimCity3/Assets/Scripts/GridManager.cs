@@ -1,104 +1,71 @@
 using UnityEngine;
 using TMPro;
-using Unity.Collections;
 using UnityEngine.InputSystem;
-using System;
-using Unity.VisualScripting;
-using UnityEngine.Rendering.Universal;
+
+
 
 public class GridManager : MonoBehaviour
 {
-    public int width = 10;
-    public int height = 10;
-    public float cellSize = 1f;
-    public GameObject boxPrefab;
-
-    private Vector2 gridOffset;
-    private GameObject[,] gridArray;
-
-    public GameObject curserPrefab;
-    private GameObject curserInstance;
+    /* TODO
+    ประกาศตัวแปร width,height, cellSize, boxPrefab, gridArray, gridOffset,curserPrefab, curserInstance
+    */
+   
 
     void Start()
     {
-        gridArray = new GameObject[width,height];
-       //gridOffset = new Vector2(-(width/2) * cellSize +(cellSize/2),-(height/2)*cellSize+(cellSize/2));
-        gridOffset = new Vector2(-(width/2) * cellSize ,-(height/2)*cellSize);
-
-        CreateGrid();
-
-        if(curserPrefab != null)
-        {
-            curserInstance = Instantiate(curserPrefab);
-            curserInstance.SetActive(false);
-        }
+        /*TODO
+        1.กำหนดค่า gridArray
+        2.กำหนดค่า gridOffset
+        3.เรียกฟังก์ชัน CreateGrid
+        4.เช็ค curserPrefab และ ปิดการทำงานของ curserInstance
+        */
+        
     }
 
     void Update()
     {
-        Debug.Log(Mouse.current.position.ReadValue());
+
         mouseCurser();
     }
 
     private void CreateGrid()
     {
-        Vector2 gridOffsets = new Vector2(-(width/2) * cellSize +(cellSize/2),-(height/2)*cellSize+(cellSize/2));
-        for(int x = 0; x < width; x++)
-        {
-            for(int y = 0; y< height; y++)
-            {
-                Vector3 spawnPosition = new Vector3(gridOffsets.x + (x*cellSize),gridOffsets.y +(y * cellSize),0);
-                GameObject visualBox = Instantiate(boxPrefab, spawnPosition, Quaternion.identity);
-                gridArray[x,y] = visualBox;
-
-                TextMeshPro textComponent = visualBox.GetComponentInChildren<TextMeshPro>();
-                if(textComponent != null)
-                {
-                    textComponent.text = $"[{x},{y}]";
-                }
-            }
-        }
+        /*TODO
+        1.กำหนดค่า gridOffsets
+        2.สร้างตาราง
+            3.สร้าง spawnboxPoint
+            4.สร้าง visualBox
+            5.ใส่ค่า visualBox ใน gridArray
+            6.สร้าง textComponent แล้วเปลี่ยนข้อความให้แสดง ตำแหน่ง x,y ใน ช่อง
+        */
         
+
     }
 
     private void mouseCurser()
     {
-        if(Camera.main == null || curserInstance == null) return;
-
-        Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
-
-        if(mouseScreenPos.x < 0 || mouseScreenPos.x > Screen.width ||
-            mouseScreenPos.y < 0 || mouseScreenPos.y > Screen.height)
-        {
-            curserInstance.SetActive(false);
-            return;
-        }
-
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(mouseScreenPos.x,mouseScreenPos.y,Camera.main.nearClipPlane));
+        /*TODO
+        1.ตรวจสอบการมีของกล้องและcurserInstance 
+        2.สร้าง mouseScreenPos เพื่ออ่านค่าตำแหน่งของเมาส์
+        3.เช็คไม่ให้ตำแหน่งเมาส์หลุดขอบของจอ ถ้าหลุดขอบไปแล้วให้ปิดการทำงานของ mouseCurser
+        4.สร้าง mousePosition เพื่อเก็บค่าจากการเปลี่ยนตำแหน่ง ScreenPoint ไปเป็น WordPoint
+        5.สร้าง girdPosition เพื่อเก็บค่าที่ได้จากฟังก์ชัน GetGridPosition เป็นการแปลงตำแหน่ง gird ที่เมาส์ชี้อยู่
+        6.ตรวจสอบตำแหน่ง gridPosition ว่าอยู่ในตำแหน่งที่เมาส์วางรึเปล่า เพื่อให้ เมาส์แสดงตามตำแหน่งของ grid 
+        7.สร้าง cellCenter เพื่อระบุตำแหน่งตรงกลางของ grid นั้นๆ 
+        */
         
-        Vector2Int gridPosition = GetGridPosition(new Vector3(mousePosition.x - gridOffset.x, mousePosition.y - gridOffset.y, 0));
-        if(gridPosition.x >= 0 && gridPosition.x < width && gridPosition.y >= 0 && gridPosition.y < height)
-        {
-            curserInstance.SetActive(true);
 
-            Vector3 cellCenter = new Vector3(
-                gridPosition.x * cellSize + (cellSize/2) + gridOffset.x,
-                gridPosition.y * cellSize + (cellSize/2) + gridOffset.y,
-                0f
-                );
-            
-            curserInstance.transform.position = cellCenter;
-        }
-        else
-        {
-            curserInstance.SetActive(false);
-        }
     }
+
 
     private Vector2Int GetGridPosition(Vector3 WorldPosition)
     {
-        int x = Mathf.FloorToInt(WorldPosition.x / cellSize);
-        int y = Mathf.FloorToInt(WorldPosition.y / cellSize);
-        return new Vector2Int(x,y);
+        /*
+        1. สร้างตัวแปร x เพื่อแปลงค่า x จาก WorldPosition ที่ส่งเข้ามาโดยปัดเศษทิ้ง
+        2. สร้างตัวแปร y เพื่อแปลงค่า y จาก WorldPosition ที่ส่งเข้ามาโดยปัดเศษทิ้ง
+        3. คืนค่า x,y แบบ Vector2Int
+        */
+
+        return Vector2Int.zero;
     }
 }
