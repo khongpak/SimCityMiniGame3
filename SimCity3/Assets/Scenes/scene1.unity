@@ -153,6 +153,7 @@ MonoBehaviour:
   cellSize: 1
   boxPrefab: {fileID: 4003607887004863150, guid: 063129b6724472f40ba2e484501852a3, type: 3}
   curserPrefab: {fileID: 3882201063744837785, guid: 290e59a57bf596342a3859cc8e29dba0, type: 3}
+  buildingPrefab: {fileID: 1387795563453635902, guid: 925bafa4225ac274eae880c8f7d2e14d, type: 3}
 --- !u!4 &276265587
 Transform:
   m_ObjectHideFlags: 0
