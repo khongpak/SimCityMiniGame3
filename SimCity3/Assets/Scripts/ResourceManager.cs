@@ -3,32 +3,39 @@ using UnityEngine;
 
 public class ResourceManager : MonoBehaviour
 {
-    public int gold {get; private set;} = 100;
-    public TMP_Text goldText;
+    /*TODO
+    ประกาศตัวแปร gold เป็นแบบ {get; private set;} = 100
+    ประกาศตัวแปร goldText เป็นแบบ TMP_Text
+    */
+    
 
-    void OnEnable()
-    {
-        GridManager.OnBuildingPlaced += HandleBuildingPlaced;
-    }
 
-    void OnDisable()
-    {
-        GridManager.OnBuildingPlaced -= HandleBuildingPlaced;
-    }
+    /*TODO
+    สร้าง OnEnble และ OnDisable เพื่อรับสมัคร OnBuildingPlaced จาก GridManager เพื่อสั่งให้ 
+    HandleBuildingPlaced ทำงาน
+    */
+    
 
     void HandleBuildingPlaced(int cost)
     {
-        DeductGold(cost);
+        //ทำการเรียกเมธอด DeductGold แล้วส่งค่า cost เข้าไป//
+        
     }
 
     public void AddGold(int amount)
     {
-        gold += amount;
+        /*TODO
+        กำหนดให้ gold เพิ่มค่าขึ้นไป จากจำนวน amount ที่ส่งเข้ามา
+        */
+        
     }
 
     public void DeductGold(int amount)
     {
-        gold -= amount;
-        if(gold < 0) gold =0;
+        /*TODO
+        ให้ตัวแปร gold หักค่าลบออก จากจำนวน amount ที่ส่งเข้ามา
+        ถ้า gold น้อยกว่า 0 ก็ให้ gold มีค่าเท่ากับ 0
+        */
+        
     }
 }
