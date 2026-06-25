@@ -8,10 +8,7 @@ public class TimeManager : MonoBehaviour
     2. ประกาศตัวแปร timer เพื่อเอาไว้เก็บค่าตัวจับเวลา
     3. ประกาศตัวแปร OnTick เป็นแบบ static event Action
     */
-    public static event Action OnTick;
-
-    public float tickInterval = 2.0f;
-    private float timer;
+    
    
 
     void Update()
@@ -22,11 +19,6 @@ public class TimeManager : MonoBehaviour
         แล้วก็ให้ OnTick ประกาศ Invoke ออกไป
         */
     
-        timer += Time.deltaTime;
-        if(timer >= tickInterval)
-        {
-            timer = 0;
-            OnTick?.Invoke();
-        }
+        
     }
 }
