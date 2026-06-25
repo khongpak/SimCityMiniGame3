@@ -7,6 +7,9 @@ public class UIManager : MonoBehaviour
     ประกาศตัวแปร moneyText เป็นแบบ TextMeshProUGUI
     ประกาศตัวแปร resourceManager
     */
+    public TextMeshProUGUI moneyText;
+    public ResourceManager resourceManager;
+
 
 
     void Update()
@@ -15,6 +18,11 @@ public class UIManager : MonoBehaviour
         เช็คตัวแปร resourceManager และ moneyText ไม่ใช่ค่าว่าง
         ให้ moneyText แสดงค่า "Gold: "
         */
+        if(resourceManager != null && moneyText != null)
+        {
+            moneyText.text = "Gold :" + resourceManager.gold.ToString();
+        }
+
        
     }
 }
