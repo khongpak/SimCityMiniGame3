@@ -196,17 +196,17 @@ MonoBehaviour:
   availableBuilding:
   - name: House
     buildingPrefab: {fileID: 1387795563453635902, guid: 925bafa4225ac274eae880c8f7d2e14d, type: 3}
-    cost: 10
-    incomePertick: 5
+    cost: 30
+    incomePerTick: 5
   - name: Factory
     buildingPrefab: {fileID: 6467431919364545257, guid: 6116db5ee662fd545862c54296aa9462, type: 3}
-    cost: 80
-    incomePertick: 10
+    cost: 60
+    incomePerTick: 10
   width: 10
   height: 10
   cellSize: 1
   boxPrefab: {fileID: 4003607887004863150, guid: 063129b6724472f40ba2e484501852a3, type: 3}
-  curserPrefab: {fileID: 3882201063744837785, guid: 290e59a57bf596342a3859cc8e29dba0, type: 3}
+  cursorPrefab: {fileID: 3882201063744837785, guid: 290e59a57bf596342a3859cc8e29dba0, type: 3}
 --- !u!4 &276265587
 Transform:
   m_ObjectHideFlags: 0
@@ -497,6 +497,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UIManager
   moneyText: {fileID: 1597380705}
   resourceManager: {fileID: 71226019}
+  dateText: {fileID: 1165502246}
+  timeManager: {fileID: 1806027628}
 --- !u!1 &1165502244
 GameObject:
   m_ObjectHideFlags: 0
@@ -1375,6 +1377,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TimeManager
   tickInterval: 2
+  day: 1
+  month: 1
+  year: 2024
 --- !u!1 &1934941644
 GameObject:
   m_ObjectHideFlags: 0

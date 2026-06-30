@@ -7,14 +7,25 @@ public class ResourceManager : MonoBehaviour
     ประกาศตัวแปร gold เป็นแบบ {get; private set;} = 100
     ประกาศตัวแปร goldText เป็นแบบ TMP_Text
     */
-    
+    public int gold {get; private set;} = 100;
+    public TMP_Text goldText;
+
 
 
     /*TODO
-    สร้าง OnEnble และ OnDisable เพื่อรับสมัคร OnBuildingPlaced จาก GridManager เพื่อสั่งให้ 
+    สร้าง OnEnable และ OnDisable เพื่อรับสมัคร OnBuildingPlaced จาก GridManager เพื่อสั่งให้ 
     HandleBuildingPlaced ทำงาน
     */
-    
+    void OnEnable()
+    {
+        GridManager.OnBuildingPlaced += HandleBuildingPlaced;
+    }
+
+    void OnDisable()
+    {
+        GridManager.OnBuildingPlaced -= HandleBuildingPlaced;
+    }
+
 
 
     void HandleBuildingPlaced(int cost)
@@ -29,7 +40,7 @@ public class ResourceManager : MonoBehaviour
         /*TODO
         กำหนดให้ gold เพิ่มค่าขึ้นไป จากจำนวน amount ที่ส่งเข้ามา
         */
-       
+       gold += amount;
     }
 
     public void DeductGold(int amount)
@@ -38,7 +49,12 @@ public class ResourceManager : MonoBehaviour
         ให้ตัวแปร gold หักค่าลบออก จากจำนวน amount ที่ส่งเข้ามา
         ถ้า gold น้อยกว่า 0 ก็ให้ gold มีค่าเท่ากับ 0
         */
+
+        gold -= amount;
+        if(gold < 0)
+        {
+            gold = 0;
+        }
        
-        
     }
 }
