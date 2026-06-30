@@ -10,8 +10,5 @@ public class BuildingData
         3. int cost
         4. int incomePertick
     */
-   public string name;
-   public GameObject buildingPrefab;
-   public int cost;
-   public int incomePerTick;
+
 }
