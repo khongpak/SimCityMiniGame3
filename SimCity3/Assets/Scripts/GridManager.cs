@@ -2,24 +2,35 @@ using UnityEngine;
 using System;
 using TMPro;
 using UnityEngine.InputSystem;
-using UnityEditor;
-using UnityEngine.UI;
-using Unity.VisualScripting;
+
 
 
 public class GridManager : MonoBehaviour
 {
     /* TODO
-    1. ประกาศตัวแปร width,height, cellSize, boxPrefab, gridArrayBG, 
-        gridOffset,cursorPrefab, cursorInstance,gridArrayData
+    1. ประกาศตัวแปร width,height, cellSize, boxPrefab, cursorPrefab
+    2. ประกาศตัวแปร gridArrayBG, gridOffset, gridArrayData, cursorInstance
     2. ประกาศตัวแปร eventBus OnBuildingPlaced
     3. สร้างส่วนของ [Header("Building Setting)] แล้วสร้าง 2 ตัวแปรนี้ให้อยู่ภายใต้หัวข้อนี้
         4. สร้างตัวแปร availableBuilding เป็นแบบ Array ประเภท BuildingData
         5. สร้างตัวแปร int selectedBuildingIndex
     */
-    
+    public static event Action<int> OnBuildingPlaced;
 
+    [Header("Building Setting")]
+        public BuildingData[] availableBuilding;
+        private int selectedBuildingIndex;
 
+    public int width = 10;
+    public int height = 10;
+    public float cellSize = 1f;
+    public GameObject boxPrefab;
+    public GameObject cursorPrefab;
+
+    private GameObject[,] gridArrayBG;
+    private GameObject[,] gridArrayData;
+    private Vector2 gridOffset;
+    private GameObject cursorInstance;
 
     void Start()
     {
@@ -31,7 +42,15 @@ public class GridManager : MonoBehaviour
         5.กำหนดค่า gridArrayData
         */
        
-        
+        gridArrayBG = new GameObject[width,height];
+        gridArrayData = new GameObject[width,height];
+        gridOffset = new Vector2(-(width/2)*cellSize, -(height/2)*cellSize);
+        CreateGrid();
+        if(cursorPrefab != null)
+        {
+            cursorInstance = Instantiate(cursorPrefab);
+            cursorInstance.SetActive(false);
+        }
         
     }
 
@@ -41,7 +60,8 @@ public class GridManager : MonoBehaviour
             1. เรียกใช้ Mousecursor
             2. เรียกใช้ PlaceObject
         */
-       
+       Mousecursor();
+       PlaceObject();
 
     }
 
@@ -55,7 +75,22 @@ public class GridManager : MonoBehaviour
             5.ใส่ค่า visualBox ใน gridArray
             6.สร้าง textComponent แล้วเปลี่ยนข้อความให้แสดง ตำแหน่ง x,y ใน ช่อง
         */
+        Vector2 gridOffsetBG = new Vector2(-(width/2)*cellSize + (cellSize/2), -(height/2) * cellSize + (cellSize/2));
         
+        for(int x = 0; x < width; x++)
+        {
+            for(int y = 0; y < height; y++)
+            {
+                Vector3 spawnBoxPoint = new Vector3((x*cellSize) + gridOffsetBG.x, (y*cellSize) + gridOffsetBG.y,0);
+                GameObject visualBox = Instantiate(boxPrefab,spawnBoxPoint,Quaternion.identity);
+                gridArrayBG[x,y] = visualBox;
+                TextMeshPro textComponent = visualBox.GetComponentInChildren<TextMeshPro>();
+                if(textComponent != null)
+                {
+                    textComponent.text = $"[{x},{y}]";
+                }
+            }
+        }
        
 
     }
@@ -71,6 +106,38 @@ public class GridManager : MonoBehaviour
         6.ตรวจสอบตำแหน่ง gridPosition ว่าอยู่ในตำแหน่งที่เมาส์วางรึเปล่า เพื่อให้ เมาส์แสดงตามตำแหน่งของ grid 
         7.สร้าง cellCenter เพื่อระบุตำแหน่งตรงกลางของ grid นั้นๆ 
         */
+
+        if(Camera.main == null || cursorInstance == null) return;
+        
+        Vector3 mouseScreenPos = Mouse.current.position.ReadValue();
+       
+        if(mouseScreenPos.x < 0 || mouseScreenPos.x > Screen.width || mouseScreenPos.y < 0 || mouseScreenPos.y > Screen.height)
+        {
+            cursorInstance.SetActive(false);
+            return;
+        }
+        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(mouseScreenPos.x,mouseScreenPos.y,Camera.main.nearClipPlane));
+        
+        Vector2Int gridPosition = GetGridPosition(new Vector3(
+            mousePosition.x - gridOffset.x,mousePosition.y - gridOffset.y, 0f
+        ));
+
+        if(gridPosition.x >= 0 && gridPosition.x < width && gridPosition.y >=0 && gridPosition.y < height)
+        {
+            cursorInstance.SetActive(true);
+
+            Vector3 cellCenter = new Vector3(
+                (gridPosition.x * cellSize) + (cellSize/2) + gridOffset.x,
+                (gridPosition.y * cellSize) + (cellSize/2) + gridOffset.y,
+                0f
+            );
+
+            cursorInstance.transform.position = cellCenter;
+        }
+        else
+        {
+            cursorInstance.SetActive(false);
+        }
         
     }
 
@@ -82,9 +149,10 @@ public class GridManager : MonoBehaviour
         2. สร้างตัวแปร y เพื่อแปลงค่า y จาก WorldPosition ที่ส่งเข้ามาโดยปัดเศษทิ้ง
         3. คืนค่า x,y แบบ Vector2Int
         */
-        
+        int x = Mathf.FloorToInt(WorldPosition.x/cellSize);
+        int y = Mathf.FloorToInt(WorldPosition.y/cellSize);
 
-        return new Vector2Int(0,0);
+        return new Vector2Int(x,y);
     }
 
     private void PlaceObject()
@@ -100,12 +168,33 @@ public class GridManager : MonoBehaviour
             8. ทำการวาง Object ในตำหน่ง gridPositionนั้น
         */ 
 
-        
+        if(Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+    {
+        Vector3 mouseScreenPos = Mouse.current.position.ReadValue();
+        if(float.IsNaN(mouseScreenPos.x) || float.IsNaN(mouseScreenPos.y)) return;
+
+        if(Camera.main != null)
+        {
+            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(mouseScreenPos.x, mouseScreenPos.y, Camera.main.nearClipPlane));
+            Vector2Int gridPosition = GetGridPosition(new Vector3(
+                mousePosition.x - gridOffset.x , mousePosition.y - gridOffset.y ,0f
+            ));
+
+            // ดึงข้อมูลตึกที่เลือกอยู่ปัจจุบันมาเพื่อดูขนาด
+            BuildingData currentData = availableBuilding[selectedBuildingIndex];
+
+            // ส่งค่า gridPosition และ ขนาดของตึก เข้าไปตรวจสอบพื้นที่
+            if (IsValidPosition(gridPosition, currentData.buildingSize))
+            {
+                CreateBuilding(gridPosition);
+            }
+        }
+    }
        
 
     }
 
-    private bool IsValidPosition(Vector2Int pos)
+    private bool IsValidPosition(Vector2Int startPos, Vector2Int size)
     {
         /*TODO
             1.ตรวจสอบตำแหน่งค่า pos ที่ส่งเข้ามาว่า ยังอยู่ในช่อง grid รึเปล่า
@@ -113,9 +202,28 @@ public class GridManager : MonoBehaviour
             3.ถ้าไม่อยู่ในช่อง grid ให้ส่งค่า false
         */
 
-        
-                
-        return false;
+        for (int x = 0; x < size.x; x++)
+        {
+            for (int y = 0; y < size.y; y++)
+            {
+                int currentX = startPos.x + x;
+                int currentY = startPos.y + y;
+
+                // 1. ตรวจสอบว่าตำแหน่งที่เช็กหลุดขอบกริดหรือไม่
+                if (currentX < 0 || currentX >= width || currentY < 0 || currentY >= height)
+                {
+                    return false; // หลุดขอบกริด วางไม่ได้ค่ะ
+                }
+
+                // 2. ตรวจสอบว่ามีสิ่งก่อสร้างอื่นวางอยู่ก่อนแล้วหรือไม่
+                if (gridArrayData[currentX, currentY] != null)
+                {
+                    return false; // ช่องไม่ว่าง วางไม่ได้ค่ะ
+                }
+            }
+        }
+                    
+        return true; // ผ่านหมดทุกช่อง วางได้เลย!
     }
     
     private void CreateBuilding(Vector2Int pos)
@@ -124,7 +232,7 @@ public class GridManager : MonoBehaviour
         1. สร้างตัวแปร currentData ประเภท BuildingData ให้เก็บค่าจาก availableBuilding ชี้ index ที่ตัวแปร selectedBuildingIndex
         2. สร้างตัวแปร resourceManager ประเภท ResourceManager แล้วให้เก็บค่าจาก Object แรกที่มีComponent ResourceManager 
             โดยใช้ FindFirstObject
-        3. ตรวจสอบว่า resourceManager ไม่ได้เป็นค่าว่าง และ เงินที่อยู่ใน resourceManager มีค่ามากกว่า currentData.cost
+        3. ตรวจสอบว่า resourceManager ไม่ได้เป็นค่าว่าง และ เงินที่อยู่ใน resourceManager มีค่ามากกว่าหรือเท่ากับ currentData.cost
         4. สร้างตัวแปร worldPosition เพื่อให้วัตถุที่จะวางลงอยู่ตรงกลางช่อง gridพอดี
         5. สร้าง Object ขึ้นมาโดยให้เก็บไว้ที่ตัวแปร newBuilding และ Object ที่สร้างมาก็ต้องอยู่ในตำแหน่ง worldPosition
         6. ตรวจสอบว่า newBuilding มี Component building อยู่ในตัวมันรึเปล่า โดยใช้ TryGetComponent ถ้ามีให้สร้างตัวแปร b ประเภท 
@@ -134,14 +242,48 @@ public class GridManager : MonoBehaviour
         9. ให้ตัวแปร array gridArrayData บันทึกตำแหน่งของ newBuilding
         10. ถ้าจากข้อที่ 3 เป็นเท็จให้ Debug ค่าออกมาว่า "เงินไม่พอสร้าง" ตามด้วยชื่อของสิ่งที่จะสร้าง
         */
-        
+        BuildingData currentData = availableBuilding[selectedBuildingIndex];
+        ResourceManager resourceManager = FindFirstObjectByType<ResourceManager>();
+    
+        if(resourceManager != null && resourceManager.gold >= currentData.cost)
+        {
+            // คำนวณหาตำแหน่งมุมซ้ายล่างของช่องกริดเริ่มต้น (ไม่ต้องบวก cellSize/2 แล้ว)
+            // เพราะ Asset ของเราตั้งค่า Pivot เป็น Bottom Left เรียบร้อยแล้วค่ะ ภาพจะขยายไปทางขวาและด้านบนเอง
+            Vector3 worldPosition = new Vector3(
+                (pos.x * cellSize) + gridOffset.x,
+                (pos.y * cellSize) + gridOffset.y,
+                0f
+            );
+
+            GameObject newBuilding = Instantiate(currentData.buildingPrefab, worldPosition, Quaternion.identity);
+            
+            if(newBuilding.TryGetComponent(out Building b))
+            {
+                b.incomePerTick = currentData.incomePerTick;
+            }
+
+            // ลูปเพื่อบันทึกข้อมูลตึกนี้ลงในทุกช่องกริดที่มันครอบครองอยู่
+            for (int x = 0; x < currentData.buildingSize.x; x++)
+            {
+                for (int y = 0; y < currentData.buildingSize.y; y++)
+                {
+                    gridArrayData[pos.x + x, pos.y + y] = newBuilding;
+                }
+            }
+
+            OnBuildingPlaced?.Invoke(currentData.cost);
+        }
+        else
+        {
+            Debug.Log("เงินไม่พอสร้าง " + currentData.name);
+        }
 
     }
 
     public void SelectBuilding(int index)
     {
         /*TODO กำหนดให้ตัวแปร selectedBuildingIndex มีค่าเท่ากับ index*/
-       
+       selectedBuildingIndex = index;
         
     }
 }
