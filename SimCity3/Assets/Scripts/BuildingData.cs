@@ -9,14 +9,8 @@ public class BuildingData
         2. GameObject buildingPrefab
         3. int cost
         4. int incomePertick
+        5. vector2in buildingSize ให้เก็บค่าเริ่มต้นเป็น (1,1)
     */
-    public string name;
-    public GameObject buildingPrefab;
-    public int cost;
-    public int incomePerTick;
 
-    // เพิ่มตัวแปรนี้เพื่อระบุขนาด (เช่น กว้าง 2 ช่อง สูง 3 ช่อง เป็นต้น)
-    // กำหนดค่าเริ่มต้นเป็น (1, 1) ไว้ก่อนเพื่อไม่ให้ตึกเดิมพังค่ะ
-    public Vector2Int buildingSize = Vector2Int.one;
 
 }

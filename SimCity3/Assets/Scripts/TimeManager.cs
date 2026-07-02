@@ -11,14 +11,7 @@ public class TimeManager : MonoBehaviour
     6. ประกาศตัวแปร year เป็น 2024
     7. ประกาศตัวแปร OnDayPassed และ OnMonthPassed เป็นแบบ static event Action
     */
-    public static event Action OnDayPassed;
-    public static event Action OnMonthPassed;
-
-    public float tickInterval = 2.0f;
-    public float timer;
-    public int day = 1;
-    public int month = 1;
-    public int year = 2024;
+   
 
     void Update()
     {
@@ -28,12 +21,7 @@ public class TimeManager : MonoBehaviour
         แล้วก็ให้ เรียกฟังก์ชัน CalculateDate
         */
 
-        timer += Time.deltaTime;
-        if(timer >= tickInterval)
-        {
-            timer = 0;
-            CalculateDate();
-        }
+       
 
         
     }
@@ -47,20 +35,7 @@ public class TimeManager : MonoBehaviour
         3. ถ้าเดือนมากกว่า 12 แล้ว ให้ month กลายเป็น 1 แล้ว year เพิ่มค่าขึ้น 1 
         4. ประกาศแบบวันออกไป
         */
-        day++;
-        if(day > 30)
-        {
-            day = 1;
-            month++;
-            OnMonthPassed?.Invoke();
-        }
-        if(month > 12)
-        {
-            month = 1;
-            year++;
-
-        }
-        OnDayPassed?.Invoke();
+        
        
     }
 
@@ -69,7 +44,7 @@ public class TimeManager : MonoBehaviour
         /*TODO ให้ return ค่า วัน/เดือน/ปี ออกไป โดยให้ วันและเดือนแสดงตัวเลข2ตำแหน่ง เช่น
         02/04/2026*/
 
-       return $"{day:D2}/{month:D2}/{year}";
+       return null;
     }
 
 }
