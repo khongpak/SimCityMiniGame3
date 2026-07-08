@@ -10,8 +10,16 @@ public class UIManager : MonoBehaviour
     ประกาศตัวแปร timeManager เป็นแบบ TimeManager
 
     */
-   
- 
+    public TextMeshProUGUI moneyText;
+    public TextMeshProUGUI dateText;
+    private ResourceManager resourceManager;
+    private TimeManager timeManger; 
+
+    void Start()
+    {
+        resourceManager = FindFirstObjectByType<ResourceManager>();
+        timeManger = FindFirstObjectByType<TimeManager>();
+    }
 
     void Update()
     {
@@ -20,7 +28,16 @@ public class UIManager : MonoBehaviour
         2. เช็คตัวแปร timeManager และ dateText ไม่ใช่ค่าว่าง ให้ dataText แสดงค่า "Date :"
         */
 
-        
+        if(resourceManager != null && moneyText != null)
+        {
+            moneyText.text  = "Gold: " + resourceManager.gold.ToString();
+
+        }     
+
+        if(timeManger != null && dateText != null)
+        {
+            dateText.text = timeManger.GetDateString();
+        }       
        
     }
 }
