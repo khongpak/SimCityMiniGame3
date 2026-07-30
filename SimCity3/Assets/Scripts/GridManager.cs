@@ -1,18 +1,36 @@
-using UnityEngine;
 using System;
 using TMPro;
+using UnityEngine;
 using UnityEngine.InputSystem;
+
 
 public class GridManager : MonoBehaviour
 {
     /* TODO
     1. ประกาศตัวแปร width,height, cellSize, boxPrefab, cursorPrefab
-    2. ประกาศตัวแปร gridArrayBG, gridOffset, gridArrayData, cursorInstance
+    2. ประกาศตัวแปร gridArrayBG, gridArrayData, gridOffset,  cursorInstance
     2. ประกาศตัวแปร eventBus OnBuildingPlaced
     3. สร้างส่วนของ [Header("Building Setting)] แล้วสร้าง 2 ตัวแปรนี้ให้อยู่ภายใต้หัวข้อนี้
         4. ประกาศตัวแปร availableBuilding เป็นแบบ Array ประเภท BuildingData
         5. ประกาศตัวแปร int selectedBuildingIndex
     */
+    public static event Action<int> OnBuildingPlaced;
+
+    [Header("Building Setting")]
+        public BuildingData[] availableBuilding;
+        private int selectedBuildingIndex = 0;
+
+    public int width = 10;
+    public int height = 10;
+    public float cellSize = 1;
+    public GameObject boxPrefab;
+    public GameObject cursorPrefab;
+
+    private GameObject[,] gridArrayBG;
+    private GameObject[,] gridArrayData;
+    private Vector2 gridOffset;
+    private GameObject cursorInstance;
+  
 
     void Start()
     {
@@ -24,6 +42,15 @@ public class GridManager : MonoBehaviour
         5.เช็ค cursorPrefab และ ปิดการทำงานของ cursorInstance
         */
 
+        gridArrayBG = new GameObject[width,height];
+        gridArrayData = new GameObject[width,height];
+        gridOffset = new Vector2(-(width/2) * cellSize, -(height/2)*cellSize);
+        CreateGrid();
+        if(cursorPrefab != null)
+        {
+            cursorInstance = Instantiate(cursorPrefab);
+            cursorInstance.SetActive(false);
+        }
 
     }
 
@@ -32,7 +59,9 @@ public class GridManager : MonoBehaviour
         /* TODO
             1. เรียกใช้ MouseHighlightCursor
             2. เรียกใช้ CheckMouseClick
-        */
+        */  
+        MouseHighlightCursor();
+        CheckMouseClick();
 
     }
 
@@ -46,7 +75,22 @@ public class GridManager : MonoBehaviour
             5.ใส่ค่า visualBox ใน gridArray
             6.สร้าง textComponent แล้วเปลี่ยนข้อความให้แสดง ตำแหน่ง x,y ใน ช่อง
         */
-         
+        Vector2 gridOffsetBG = new Vector2(-(width/2) * cellSize + (cellSize/2), -(height/2)*cellSize + (cellSize/2));
+        for(int x = 0; x < width; x++)
+        {
+            for(int y = 0; y < height; y++)
+            {
+                Vector3 spawnboxPoint = new Vector3((x*cellSize) + gridOffsetBG.x, (y*cellSize)+gridOffsetBG.y,0f);
+                GameObject visualBox = Instantiate(boxPrefab,spawnboxPoint,Quaternion.identity);
+                gridArrayBG[x,y] = visualBox;
+                TextMeshPro textComponent = visualBox.GetComponentInChildren<TextMeshPro>();
+                if(textComponent != null)
+                {
+                    textComponent.text = $"{x},{y}";
+                }
+            }
+        }
+        
     }
 
     private void MouseHighlightCursor()
@@ -64,7 +108,8 @@ public class GridManager : MonoBehaviour
         10. ให้ประกาศตัวแปร currentData ประเภท BuildingData เพิ่มเก็บค่า availableBuilding[selectedBuildingIndex]
         11. ประกาศตัวแปร currentBuildingPrefab ประเภท GameObject ให้เก็บ ค่า currentData.buildingPrefab
         12. ประกาศตัวแปร cursorHighlightSprite และ buildingPrefabSprite ประเภท SpriteRenderer 
-            ให้เก็บค่าของ cursorInstanc ที่มี Component SpriteRenderer
+            ให้cursorHighlightSprite เก็บค่าของ cursorInstanc และ buildingPrefabSprite เก็บค่าของ currentBuildingPrefab
+            ที่มี Component SpriteRenderer โดยใช้ getComponent
         13. ให้เช็คว่า cursorHighlightSprite และ buildingPrefabSprite ไม่ใช่ค่าว่าง
         14. กำหนดให้ cursorHighlightSprte.sprite = buildingPrefabSprite.sprte
         15. ประกาศตัวแปร resourceManager ประเภท ResourceManager ให้ FindFirstObjectByType<> 
@@ -74,7 +119,66 @@ public class GridManager : MonoBehaviour
             แต่ถ้าไม่จริง ให้กำหนด cursorHighlightSprite.color = new color(1f,0.5f,0.5f,0.5f)
         18. ถ้าไม่เป็นไปตามเงื่อนไขในข้อ 9 ให้ cursorInstance.SetActive(false)
         */
+
+        if(Camera.main == null || cursorInstance == null) return;
+        Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
+        if(mouseScreenPos.x < 0 || mouseScreenPos.x > Screen.width || mouseScreenPos.y < 0 || mouseScreenPos.y > Screen.height)
+        {
+            cursorInstance.SetActive(false);
+            return;
+        }
+
+        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(
+            mouseScreenPos.x,mouseScreenPos.y,Camera.main.nearClipPlane
+        ));
+
+        Vector2Int gridPosition = GetGridPosition(new Vector3(
+            mousePosition.x - gridOffset.x, mousePosition.y - gridOffset.y,0f
+        ));
+
+        if(gridPosition.x >= 0 && gridPosition.x < width && gridPosition.y >=0 && gridPosition.y < height)
+        {
+            cursorInstance.SetActive(true);
+
+            Vector3 cellCenter = new Vector3(
+                (gridPosition.x*cellSize) + gridOffset.x,(gridPosition.y * cellSize)+gridOffset.y,0f);
+            
+            cursorInstance.transform.position = cellCenter;
+        }
+
+        if(availableBuilding != null && availableBuilding.Length > 0)
+        {
+            BuildingData currentData = availableBuilding[selectedBuildingIndex];
+            GameObject currentBuildingPrefab = currentData.buildingPrefab;
+
+            SpriteRenderer cursorHighlightSprit = cursorInstance.GetComponent<SpriteRenderer>();
+            SpriteRenderer buildingPrefabSprite = currentBuildingPrefab.GetComponent<SpriteRenderer>();
+
+            if(cursorHighlightSprit != null && buildingPrefabSprite != null)
+            {
+                cursorHighlightSprit.sprite = buildingPrefabSprite.sprite;
+            }
+
+            ResourceManager resourceManager = FindFirstObjectByType<ResourceManager>();
+            bool canPlaceBuilding = IsValidPosition(gridPosition,currentData.buildingSize) &&
+                (resourceManager != null && resourceManager.gold >= currentData.cost);
+
+            if (canPlaceBuilding)
+            {
+                cursorHighlightSprit.color = new Color(0.5f,1.0f,0.5f,0.5f);
+            }
+            else
+            {
+                cursorHighlightSprit.color = new Color(1.0f,0.5f,0.5f,0.5f);
+            }
+        }
+        else
+        {
+            cursorInstance.SetActive(false);
+        }
+
         
+
     }
 
 
@@ -84,9 +188,12 @@ public class GridManager : MonoBehaviour
         1. ประกาศตัวแปร x เพื่อแปลงค่า x จาก WorldPosition ที่ส่งเข้ามาโดยปัดเศษทิ้ง
         2. ประกาศตัวแปร y เพื่อแปลงค่า y จาก WorldPosition ที่ส่งเข้ามาโดยปัดเศษทิ้ง
         3. คืนค่า x,y แบบ Vector2Int
-        */
-        
-        return new Vector2Int(0,0);
+        */     
+
+        int x = Mathf.FloorToInt(WorldPosition.x/cellSize);
+        int y = Mathf.FloorToInt(WorldPosition.y/cellSize);
+      
+        return new Vector2Int(x,y);
 
     }
 
@@ -101,7 +208,24 @@ public class GridManager : MonoBehaviour
             5. ตรวจสอบว่า gridArrayData[currentX, currentY] วางรึเปล่า ถ้าไม่ว่างให้ return ค่า false
             6. ถ้าเช็คใน loop หมดแล้วว่าไม่มีค่า false ก็ให้ return ค่า true
         */
+        for(int x = 0; x < size.x; x++)
+        {
+            for(int y = 0; y < size.y; y++)
+            {
+                int currentX = startPos.x + x;
+                int currentY = startPos.y + y;
+                if(currentX < 0 || currentX >= width || currentY < 0 || currentY >= height)
+                {
+                    return false;
+                }
 
+                if(gridArrayData[currentX,currentY] != null)
+                {
+                    return false;
+                }
+            }
+        }
+        
         return true;
     }
     
@@ -117,12 +241,40 @@ public class GridManager : MonoBehaviour
         6. ตรวจสอบว่า newBuilding มี Component building อยู่ในตัวมันรึเปล่า โดยใช้ TryGetComponent ถ้ามีให้ประกาศตัวแปร b ประเภท 
             building ขึ้นมาเพื่อทำการเชื่อมกับ component building ที่อยู่ใน newBuilding 
         7. จากนั้นกำหนดค่า incomePerTick ที่อยู่ใน newBuilding ให้เท่ากับ currentData.incomePertick
-        8. จากนั้นกำหนดค่า constructionCost ที่อยู่ใน newBuilding ให้เท่ากบ currentData.cost
+        8. จากนั้นกำหนดค่า constructionCost ที่อยู่ใน newBuilding ให้เท่ากับ currentData.cost
         8. สร้าง loop ขึ้นมาตามขนาดของ buildingsize แล้วบันทึกค่าลงใน gridArrayData[pos.x+x,pos.y+y]
-        8. ประกาศ onBuildingPlace ออกไปพร้อมส่งค่า currentData.cost
+        8. หลังจากบันทึกในลูปเสร็จแล้ว ก็ประกาศ onBuildingPlace ออกไปพร้อมส่งค่า currentData.cost นอกลูป
         10. ถ้าจากข้อที่ 3 เป็นเท็จให้ Debug ค่าออกมาว่า "เงินไม่พอสร้าง" ตามด้วยชื่อของสิ่งที่จะสร้าง
         */
+        BuildingData currentData = availableBuilding[selectedBuildingIndex];
+        ResourceManager resourceManager = FindFirstObjectByType<ResourceManager>();
+        if(resourceManager != null && resourceManager.gold >= currentData.cost)
+        {
+            Vector3 worldPosition = new Vector3(
+                (pos.x*cellSize)+ gridOffset.x,(pos.y*cellSize) + gridOffset.y,0f
+            );
+            
+            GameObject newBuilding = Instantiate(currentData.buildingPrefab,worldPosition,Quaternion.identity);
+            if(newBuilding.TryGetComponent(out Building building))
+            {
+                building.incomePerTick = currentData.incomePerTick;
+                building.constructionCost = currentData.cost;
+            }
 
+            for(int x = 0; x < currentData.buildingSize.x; x++)
+            {
+                for(int y = 0; y< currentData.buildingSize.y; y++)
+                {
+                    gridArrayData[pos.x + x, pos.y + y] = newBuilding;
+                }
+            }
+
+            OnBuildingPlaced?.Invoke(currentData.cost);
+        }
+        else
+        {
+            Debug.Log("เงินไม่พอสร้าง "+ currentData.name);
+        }
         
 
     }
@@ -130,33 +282,64 @@ public class GridManager : MonoBehaviour
     public void SelectBuilding(int index)
     {
         /*TODO กำหนดให้ตัวแปร selectedBuildingIndex มีค่าเท่ากับ index*/
-
-        
+        selectedBuildingIndex = index;
     }
 
     private void CheckMouseClick()
     {
         /*TODO
-            1. ตรวจเช็คว่าเมาส์ยังทำงานอยู่รึเปล่า พร้อมกับเช็คว่าเมาส์มีการคลิกซ้ายรึยัง
-            2. สร้าง mouseScreenPos เพื่อขึ้นมารับค่าการอ่านตำแหน่งของเมาส์ผ่าน Screen
-            3. ตรวจเช็คว่าค่า mouseScreePos.x กับ mouseScreenPos.y ได้ส่งค่าที่ไม่ใช่ตัวเลขมารึเปล่า ถ้าใช่ให้ returnออกไปเลย
-            4. เช็คว่ากล้องยังมีอยู่ไม่ได้หายไปไหน
-            5. สร้าง MousePosition พร้อมเปลี่ยนค่าตำแหน่งMouse จาก ScreenPoint ไปเป็น WorldPoint
-            6. สร้าง gridPosition ขึ้นมาเพื่อเก็บค่าตำแหน่ง grid ที่เมาส์ชี้อยู่ โดยเรียก GetGridPositon
-            7. ประกาศตัวแปร currentData ประเภท BuildingData ให้เก็บค่าจาก availableBuilding ชี้ index ที่ตัวแปร selectedBuildingIndex
-            8. เรียก IsValidPosition โดยส่งค่า gridPosion กับ currentdata.buildingsize เพื่อเช็คว่า ตำแหน่งนั้นสามารถวางObjectได้ไหม
-            9. ทำการวาง Object ในตำหน่ง gridPositionนั้น
-
-            10. ตรวจเช็คว่าเมาส์ยังทำงานอยู่รึเปล่า พร้อมกับเช็คว่าเมาส์มีการคลิกซ้ายรึยัง
-            11. สร้าง mouseScreenPos เพื่อขึ้นมารับค่าการอ่านตำแหน่งของเมาส์ผ่าน Screen
-            12. ตรวจเช็คว่าค่า mouseScreePos.x กับ mouseScreenPos.y ได้ส่งค่าที่ไม่ใช่ตัวเลขมารึเปล่า ถ้าใช่ให้ returnออกไปเลย
-            13. เช็คว่ากล้องยังมีอยู่ไม่ได้หายไปไหน
-            14. สร้าง MousePosition พร้อมเปลี่ยนค่าตำแหน่งMouse จาก ScreenPoint ไปเป็น WorldPoint
-            15. สร้าง gridPosition ขึ้นมาเพื่อเก็บค่าตำแหน่ง grid ที่เมาส์ชี้อยู่ โดยเรียก GetGridPositon
-            16. เช็คว่า girdPosition ยังอยู่ในกริดรึเปล่า ถ้าอยู่ในกริด ก็ให้เรียกเมธอด DemolishBuilding(gridPosition)
+            1. ตรวจเช็คว่าเมาส์ทำงานรึเปล่า
+            2. สร้างตัวแปร isLeftPressed เป็นแบบ bool เพื่อเก็บค่า ว่าเมาส์ทางซ้ายว่าได้กดรึเปล่า
+            3. สร้างตัวแปร isRightPressed เป็นแบบ bool เพื่อเก็บค่า ว่าเมาส์ทางขวาได้กดรึเปล่า
+            4. ถ้า isLeftPressed และ isRightPressed ไม่ได้กด ให้ return
+            5. สร้าง mouseScreenPos เพื่อขึ้นมารับค่าการอ่านตำแหน่งของเมาส์ผ่าน Screen
+            6. ตรวจเช็คว่าค่า mouseScreePos.x กับ mouseScreenPos.y ได้ส่งค่าที่ไม่ใช่ตัวเลขมารึเปล่า ถ้าใช่ให้ returnออกไปเลย
+            7. เช็คว่ากล้องยังมีอยู่ไม่ได้หายไปไหน
+            8. สร้าง MousePosition พร้อมเปลี่ยนค่าตำแหน่งMouse จาก ScreenPoint ไปเป็น WorldPoint
+            9. สร้าง gridPosition ขึ้นมาเพื่อเก็บค่าตำแหน่ง grid ที่เมาส์ชี้อยู่ โดยเรียก GetGridPositon
+            10. เช็คว่าถ้า isLeftPress เป็นจริง 
+            11. ประกาศตัวแปร currentData ประเภท BuildingData ให้เก็บค่าจาก availableBuilding ชี้ index ที่ตัวแปร selectedBuildingIndex
+            12. เรียก IsValidPosition โดยส่งค่า gridPosion กับ currentdata.buildingsize เพื่อเช็คว่า ตำแหน่งนั้นสามารถวางObjectได้ไหม
+            13. ทำการวาง Object ในตำหน่ง gridPositionนั้น
+            14. เช็คว่าถ้า isRightPress เป็นจริง
+            15. เช็คว่า girdPosition ยังอยู่ในกริดรึเปล่า ถ้าอยู่ในกริด ก็ให้เรียกเมธอด DemolishBuilding(gridPosition)
         */ 
-              
+        if(Mouse.current == null) return;
+        bool isLeftPress = Mouse.current.leftButton.wasPressedThisFrame;
+        bool isRightPress = Mouse.current.rightButton.wasPressedThisFrame;
 
+        if(!isLeftPress && !isRightPress) return;
+        Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
+        if(float.IsNaN(mouseScreenPos.x) || float.IsNaN(mouseScreenPos.y)) return;
+
+        if(Camera.main != null)
+        {
+            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(
+                mouseScreenPos.x, mouseScreenPos.y,Camera.main.nearClipPlane
+            ));
+
+            Vector2Int gridPosition = GetGridPosition(new Vector3(
+                mousePosition.x - gridOffset.x, mousePosition.y - gridOffset.y,0f 
+            ));
+
+            if(isLeftPress && !isRightPress)
+            {
+                BuildingData currentData = availableBuilding[selectedBuildingIndex];
+                if (IsValidPosition(gridPosition, currentData.buildingSize))
+                {
+                    CreateBuilding(gridPosition);
+                }
+            }
+
+            if(isRightPress && !isLeftPress)
+            {
+                if(gridPosition.x >= 0 && gridPosition.x < width && gridPosition.y >= 0 && gridPosition.y < height)
+                {
+                    DemolishBuilding(gridPosition);
+                }
+            }
+        }
+     
     }
 
 
@@ -177,6 +360,37 @@ public class GridManager : MonoBehaviour
           11. Debug.Log($"ทุบตึกเรียบร้อย ได้คืน {refundAmount} Gold");    
   
         */
+
+        if(gridArrayData[pos.x,pos.y] == null) return;
+
+        GameObject buildingToDestroy = gridArrayData[pos.x,pos.y];
+        int refundAmount = 0;
+
+        if(buildingToDestroy.TryGetComponent(out Building building))
+        {
+            refundAmount = building.constructionCost/2;
+        }
+
+        ResourceManager resourceManager = FindFirstObjectByType<ResourceManager>();
+        if(resourceManager != null)
+        {
+            resourceManager.RefundGold(refundAmount);
+        }
+        
+        for(int x=0; x < width; x++)
+        {
+            for(int y = 0; y < height; y++)
+            {
+                if(gridArrayData[x,y] == buildingToDestroy)
+                {
+                    gridArrayData[x,y] = null;
+                }
+            }
+        }
+
+        Destroy(buildingToDestroy);
+
+        Debug.Log($"ทุบตึกเรียบร้อย ได้คืน {refundAmount} Gold");
 
     }
 

@@ -1,3 +1,5 @@
+using System;
+using System.Threading;
 using TMPro;
 using UnityEngine;
 
@@ -16,5 +18,29 @@ public class UIManager : MonoBehaviour
         6.2. เช็คตัวแปร timeManager และ dateText ไม่ใช่ค่าว่าง ให้ dataText แสดงค่า "Date :"
 
     */
-   
+
+    public TextMeshProUGUI moneyText;
+    public TextMeshProUGUI dateText;
+    private ResourceManager resourceManager;
+    private TimeManager timeManager;
+
+    void Start()
+    {
+        resourceManager = FindFirstObjectByType<ResourceManager>();
+        timeManager = FindFirstObjectByType<TimeManager>();
+    }
+
+    void Update()
+    {
+        if(resourceManager != null && moneyText != null)
+        {
+            moneyText.text = "Gold :"+resourceManager.gold.ToString();
+        }
+
+        if(timeManager != null & dateText != null)
+        {
+            dateText.text = timeManager.GetDataString();
+        }
+    }
+
 }

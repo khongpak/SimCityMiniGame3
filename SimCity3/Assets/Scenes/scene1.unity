@@ -196,16 +196,16 @@ MonoBehaviour:
   availableBuilding:
   - name: House
     buildingPrefab: {fileID: 7239377883860857780, guid: f1ab25c6b0debb34fb0a3b2bbaba6ccc, type: 3}
-    cost: 20
-    incomePertick: 5
+    cost: 10
+    incomePerTick: 5
     buildingSize: {x: 1, y: 1}
   - name: Factory
     buildingPrefab: {fileID: 7478460582373867331, guid: 4f9b6095629c3fc4f9290ce404b2e0b3, type: 3}
     cost: 50
-    incomePertick: 10
+    incomePerTick: 10
     buildingSize: {x: 1, y: 2}
-  width: 10
-  height: 10
+  width: 50
+  height: 50
   cellSize: 1
   boxPrefab: {fileID: 4003607887004863150, guid: 063129b6724472f40ba2e484501852a3, type: 3}
   cursorPrefab: {fileID: 3882201063744837785, guid: 290e59a57bf596342a3859cc8e29dba0, type: 3}
@@ -236,6 +236,7 @@ GameObject:
   - component: {fileID: 389637087}
   - component: {fileID: 389637086}
   - component: {fileID: 389637089}
+  - component: {fileID: 389637090}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -361,6 +362,22 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &389637090
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 389637085}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5d1197ba50542040a8374c558d94f41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraController
+  moveSpeed: 10
+  zoomSpeed: 2
+  minZoom: 2
+  maxZoom: 15
 --- !u!1 &967909931
 GameObject:
   m_ObjectHideFlags: 0
@@ -578,8 +595,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -828, y: 476}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: -759.7712, y: 472.96506}
+  m_SizeDelta: {x: 336.4574, y: 56.068}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1165502246
 MonoBehaviour:
@@ -667,7 +684,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: -12.022003}
+  m_margin: {x: 0, y: 0, z: 0, w: 0.000030517578}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
