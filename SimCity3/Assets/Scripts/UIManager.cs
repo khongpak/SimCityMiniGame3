@@ -19,28 +19,4 @@ public class UIManager : MonoBehaviour
 
     */
 
-    public TextMeshProUGUI moneyText;
-    public TextMeshProUGUI dateText;
-    private ResourceManager resourceManager;
-    private TimeManager timeManager;
-
-    void Start()
-    {
-        resourceManager = FindFirstObjectByType<ResourceManager>();
-        timeManager = FindFirstObjectByType<TimeManager>();
-    }
-
-    void Update()
-    {
-        if(resourceManager != null && moneyText != null)
-        {
-            moneyText.text = "Gold :"+resourceManager.gold.ToString();
-        }
-
-        if(timeManager != null & dateText != null)
-        {
-            dateText.text = timeManager.GetDataString();
-        }
-    }
-
 }

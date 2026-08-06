@@ -11,10 +11,6 @@ public class BuildingData
         4. int incomePertick
         5. vector2in buildingSize ให้เก็บค่าเริ่มต้นเป็น (1,1)
     */
-    public string name;
-    public GameObject buildingPrefab;
-    public int cost;
-    public int incomePerTick;
-    public Vector2Int buildingSize = Vector2Int.one;
+ 
 
 }
