@@ -201,11 +201,11 @@ MonoBehaviour:
     buildingSize: {x: 1, y: 1}
   - name: Factory
     buildingPrefab: {fileID: 7478460582373867331, guid: 4f9b6095629c3fc4f9290ce404b2e0b3, type: 3}
-    cost: 50
+    cost: 80
     incomePerTick: 10
     buildingSize: {x: 1, y: 2}
-  width: 50
-  height: 50
+  width: 30
+  height: 30
   cellSize: 1
   boxPrefab: {fileID: 4003607887004863150, guid: 063129b6724472f40ba2e484501852a3, type: 3}
   cursorPrefab: {fileID: 3882201063744837785, guid: 290e59a57bf596342a3859cc8e29dba0, type: 3}
@@ -544,7 +544,8 @@ Transform:
   m_LocalPosition: {x: -1.66542, y: 0.07276, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1934941648}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1053481924
@@ -1536,7 +1537,7 @@ RectTransform:
   - {fileID: 1597380704}
   - {fileID: 1165502245}
   - {fileID: 1629293250}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1053481923}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -1552,5 +1553,4 @@ SceneRoots:
   - {fileID: 71226018}
   - {fileID: 1806027627}
   - {fileID: 1053481923}
-  - {fileID: 1934941648}
   - {fileID: 1269177847}

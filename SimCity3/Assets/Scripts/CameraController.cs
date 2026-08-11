@@ -13,18 +13,28 @@ public class CameraController : MonoBehaviour
     3. สร้างตัวแปร cam ให้เป็นประเภท Camera
 
     */
-    
+    [Header("Movement Setting")]
+    public float moveSpeed = 10f;
+
+    [Header("Zoom Setting")]
+    public float zoomSpeed = 2f;
+    public float minZoom = 2f;
+    public float maxZoom = 15f;
+
+    private Camera cam;
 
     void Start()
     {
         //Getcomponent ประเภท Camera เข้าไปในตัวแปร cam//
+        cam = GetComponent<Camera>();
         
     }
 
     void Update()
     {
         // ประกาศใช้ HandleMovement() และ HandleZoom()
-        
+       HandleMovement();
+       HandleZoom();
     }
 
     void HandleMovement()
@@ -40,7 +50,18 @@ public class CameraController : MonoBehaviour
             จากนั้นก็ให้คูณเวกเตอร์ด้วย movespeed และ คูณด้วย Time.deltaTime
         8. ใช้ transform.Translate(move, Space.World) เพื่อค่อยๆเพิ่มค่า x หรือ y โดยอ้างอิงกับแกน x,y,z ของโลก
         */
-        
+        float x = 0f;
+        float y = 0f;
+
+        if(Keyboard.current == null) return;
+
+        if(Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) x = -1f;
+        if(Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) x = 1f;
+        if(Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed) y = 1f;
+        if(Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed) y = -1f;
+
+        Vector3 move = new Vector3(x,y,0) * moveSpeed * Time.deltaTime;
+        transform.Translate(move,Space.World);
     
     }
 
@@ -53,6 +74,14 @@ public class CameraController : MonoBehaviour
         4. กำหนดให้ค่า cam.orthographicSize ลดค่าลงเพิ่มจาก scrollValue คูณ 0.01 แล้วก็คูณด้วย zoomSpeed
         5. กำหนดให้ค่า cam.orthographicSize มีค่าต่ำสุดเท่ากับ minZoom และ ค่าสูงสุดเท่ากับ maxZoom โดยใช้ Mathf.Clamp
         */
+
+        if(Mouse.current == null) return;
+        float scrollValue = Mouse.current.scroll.ReadValue().y;
+        if(scrollValue != 0)
+        {
+            cam.orthographicSize -= scrollValue * 0.01f * zoomSpeed;
+            cam.orthographicSize = Mathf.Clamp(cam.orthographicSize,minZoom,maxZoom);
+        }
         
     }
 }

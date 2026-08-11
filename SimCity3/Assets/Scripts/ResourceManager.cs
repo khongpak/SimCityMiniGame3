@@ -15,5 +15,43 @@ public class ResourceManager : MonoBehaviour
            พร้อมตรวจสอบว่า ถ้า gold น้อยกว่า 0 ก็ให้ค่า gold = 0
         4.4. RefundGold(int amount) แล้วกำหนดค่า gold เพิ่มขึ้นจากจำนวน amount ที่ส่งเข้ามา
     */
-  
+    
+    public int gold {get; private set;} = 100;
+    public TMP_Text goldText;
+
+    void OnEnable()
+    {
+        GridManager.OnBuildingPlaced += HandleBuildingPlaced;
+    }
+
+    void OnDisable()
+    {
+        GridManager.OnBuildingPlaced -= HandleBuildingPlaced;
+    }
+
+    void HandleBuildingPlaced(int cost)
+    {
+        DeductGold(cost);
+    }
+
+    public void DeductGold(int amount)
+    {
+        gold -= amount;
+        if(gold < 0)
+        {
+            gold = 0;
+        }
+    }
+
+    public void AddGold(int amount)
+    {
+        gold += amount;
+    }
+
+    public void RefundGold(int amount)
+    {
+        gold += amount;
+    }
+
+
 }

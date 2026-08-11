@@ -20,5 +20,47 @@ public class TimeManager : MonoBehaviour
         9.4. ประกาศแบบวันออกไป
     10. สร้าง เมธอด GetDateString() โดย ให้ return ค่า วัน/เดือน/ปี ออกไป โดยให้ วันและเดือนแสดงตัวเลข2ตำแหน่ง เช่น
         02/04/2026*/
-    
+    public static event Action OndayPass;
+    public static event Action OnMonthPass;
+
+    public float tickInterval = 2.0f;
+    private float timer = 0;
+    private int day = 1;
+    private int month = 1;
+    private int year = 2024;
+
+    void Update()
+    {
+        timer += Time.deltaTime;
+        if(timer > tickInterval)
+        {
+            timer = 0;
+            CalculateDate();
+        }
+    } 
+
+    private void CalculateDate()
+    {
+        day++;
+        OndayPass?.Invoke();
+
+        if(day > 30)
+        {
+            day = 1;
+            month++;
+            OnMonthPass?.Invoke();
+        }
+
+        if(month > 12)
+        {
+            month = 1;
+            year++;
+        }
+    }
+
+    public string GetDateStrings()
+    {
+        return $"{day:D2}/{month:D2}/{year}";
+    }
+
 }
