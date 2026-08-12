@@ -346,6 +346,7 @@ public class GridManager : MonoBehaviour
             }
 
             OnBuildingPlaced?.Invoke(currentData.cost);
+            
 
             // แจ้งเตือนตึกโดยรอบให้เช็คสถานะถนน
             NotifyNeighbors(pos, currentData.buildingSize);
@@ -433,6 +434,7 @@ public class GridManager : MonoBehaviour
     // ฟังก์ชันกระจายการแจ้งเตือนไปยังตึกโดยรอบเพื่ออัปเดตการเชื่อมต่อถนน
     private void NotifyNeighbors(Vector2Int startPos, Vector2Int size)
     {
+        
         for (int x = -1; x <= size.x; x++)
         {
             for (int y = -1; y <= size.y; y++)
