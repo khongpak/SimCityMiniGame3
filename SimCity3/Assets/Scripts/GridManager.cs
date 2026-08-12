@@ -325,29 +325,34 @@ public class GridManager : MonoBehaviour
         
         BuildingData currentData = availableBuilding[selectedBuildingIndex];
         ResourceManager resourceManager = FindFirstObjectByType<ResourceManager>();
-        if(resourceManager != null && resourceManager.gold >= currentData.cost)
+        
+        if (resourceManager != null && resourceManager.gold >= currentData.cost)
         {
-            Vector3 worldPosition = new Vector3((pos.x*cellSize) + gridOffset.x,(pos.y*cellSize) + gridOffset.y, 0f );
-            GameObject newBuilding = Instantiate(currentData.buildingPrefab,worldPosition,Quaternion.identity);
-            if(newBuilding.TryGetComponent(out Building building))
+            Vector3 worldPosition = new Vector3((pos.x * cellSize) + gridOffset.x, (pos.y * cellSize) + gridOffset.y, 0f);
+            GameObject newBuilding = Instantiate(currentData.buildingPrefab, worldPosition, Quaternion.identity);
+
+            // ตั้งค่าข้อมูลตึก รวมถึงตำแหน่ง และ GridManager Reference
+            if (newBuilding.TryGetComponent(out Building building))
             {
-                building.incomePerTick = currentData.incomePerTick;
-                building.constructionCost = currentData.cost;
+                building.Setup(currentData.incomePerTick, currentData.cost, pos, currentData.buildingSize, this);
             }
 
-            for(int x=0; x < currentData.buildingSize.x; x++)
+            for (int x = 0; x < currentData.buildingSize.x; x++)
             {
-                for(int y = 0; y < currentData.buildingSize.y; y++)
+                for (int y = 0; y < currentData.buildingSize.y; y++)
                 {
                     gridArrayData[pos.x + x, pos.y + y] = newBuilding;
                 }
             }
 
             OnBuildingPlaced?.Invoke(currentData.cost);
+
+            // แจ้งเตือนตึกโดยรอบให้เช็คสถานะถนน
+            NotifyNeighbors(pos, currentData.buildingSize);
         }
         else
         {
-            Debug.Log("เงินไม่พอสร้าง "+ currentData.name);
+            Debug.Log("เงินไม่พอสร้าง " + currentData.name);
         }
 
     }
@@ -383,21 +388,67 @@ public class GridManager : MonoBehaviour
             resourceManager.RefundGold(refundAmount);
         }
 
-        for(int x = 0; x < width; x++)
+        // หาขนาดขอบเขตของตึกที่ถูกทุบเพื่อแจ้งเตือนช่องรอบข้างอย่างถูกต้อง
+        Vector2Int minPos = new Vector2Int(width, height);
+        Vector2Int maxPos = new Vector2Int(-1, -1);
+
+        for (int x = 0; x < width; x++)
         {
-            for(int y = 0; y < height; y++)
+            for (int y = 0; y < height; y++)
             {
-                if(gridArrayData[x,y] == buildingToDestroy)
+                if (gridArrayData[x, y] == buildingToDestroy)
                 {
-                    gridArrayData[x,y] = null;
+                    gridArrayData[x, y] = null;
+                    
+                    if (x < minPos.x) minPos.x = x;
+                    if (y < minPos.y) minPos.y = y;
+                    if (x > maxPos.x) maxPos.x = x;
+                    if (y > maxPos.y) maxPos.y = y;
                 }
             }
         }
 
         Destroy(buildingToDestroy);
-        Debug.Log($"ทุบตึกเรียบร้อย ได้คืน {refundAmount} Gold"); 
+        Debug.Log($"ทุบตึกเรียบร้อย ได้คืน {refundAmount} Gold");
+
+        // แจ้งเตือนอาคารรอบข้างที่เคยอยู่ติดกับตึกนี้
+        if (maxPos.x >= 0 && maxPos.y >= 0)
+        {
+            Vector2Int size = new Vector2Int(maxPos.x - minPos.x + 1, maxPos.y - minPos.y + 1);
+            NotifyNeighbors(minPos, size);
+        }
         
 
+    }
+
+    public GameObject GetBuildingAt(Vector2Int pos)
+    {
+        if (pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height)
+        {
+            return gridArrayData[pos.x, pos.y];
+        }
+        return null;
+    }
+
+    // ฟังก์ชันกระจายการแจ้งเตือนไปยังตึกโดยรอบเพื่ออัปเดตการเชื่อมต่อถนน
+    private void NotifyNeighbors(Vector2Int startPos, Vector2Int size)
+    {
+        for (int x = -1; x <= size.x; x++)
+        {
+            for (int y = -1; y <= size.y; y++)
+            {
+                bool isOutside = (x == -1 || x == size.x || y == -1 || y == size.y);
+                if (isOutside)
+                {
+                    Vector2Int checkPos = new Vector2Int(startPos.x + x, startPos.y + y);
+                    GameObject obj = GetBuildingAt(checkPos);
+                    if (obj != null && obj.TryGetComponent(out Building b))
+                    {
+                        b.CheckRoadConnection();
+                    }
+                }
+            }
+        }
     }
 
 }
