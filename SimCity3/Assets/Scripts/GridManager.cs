@@ -14,22 +14,7 @@ public class GridManager : MonoBehaviour
         4. ประกาศตัวแปร availableBuilding เป็นแบบ Array ประเภท BuildingData
         5. ประกาศตัวแปร int selectedBuildingIndex
     */
-    public static event Action<int> OnBuildingPlaced;
-
-    [Header("Building Setting")]
-        public BuildingData[] availableBuilding;
-        private int selectedBuildingIndex = 0;
-    
-    public int width = 10;
-    public int height = 10;
-    public float cellSize = 1f;
-    public GameObject boxPrefab;
-    public GameObject cursorPrefab;
-
-    private GameObject[,] gridArrayBG;
-    private GameObject[,] gridArrayData;
-    private Vector2 gridOffset;
-    private GameObject cursorInstance;
+   
 
     void Start()
     {
@@ -40,15 +25,7 @@ public class GridManager : MonoBehaviour
         4.เรียกฟังก์ชัน CreateGrid
         5.เช็ค cursorPrefab และ ปิดการทำงานของ cursorInstance
         */
-        gridArrayBG = new GameObject[width,height];
-        gridArrayData = new GameObject[width,height];
-        gridOffset = new Vector2(-(width/2) * cellSize, -(height/2)*cellSize);
-        CreateGrid();
-        if(cursorPrefab != null)
-        {
-            cursorInstance = Instantiate(cursorPrefab);
-            cursorInstance.SetActive(false);
-        }
+    
 
     }
 
@@ -58,8 +35,7 @@ public class GridManager : MonoBehaviour
             1. เรียกใช้ MouseHighlightCursor
             2. เรียกใช้ CheckMouseClick
         */  
-        MouseHighlightCursor();
-        CheckMouseClick();
+       
 
     }
 
@@ -73,21 +49,6 @@ public class GridManager : MonoBehaviour
             5.ใส่ค่า visualBox ใน gridArray
             6.สร้าง textComponent แล้วเปลี่ยนข้อความให้แสดง ตำแหน่ง x,y ใน ช่อง
         */
-        Vector2 gridOffsetBG = new Vector2((-width/2)*cellSize + (cellSize/2), -(height/2)*cellSize + (cellSize/2));
-        for(int x = 0; x < width; x++)
-        {
-            for(int y = 0; y< height; y++)
-            {
-                Vector3 spawnBoxPoint = new Vector3((x*cellSize) + gridOffsetBG.x,(y*cellSize)+gridOffsetBG.y,0f);
-                GameObject visualBox = Instantiate(boxPrefab,spawnBoxPoint,Quaternion.identity);
-                gridArrayBG[x,y] = visualBox;
-                TextMeshPro textComponent = visualBox.GetComponentInChildren<TextMeshPro>();
-                if(textComponent != null)
-                {
-                    textComponent.text = $"[{x},{y}]";
-                }
-            }
-        }
        
         
     }
@@ -120,72 +81,7 @@ public class GridManager : MonoBehaviour
             แต่ถ้าไม่จริง ให้กำหนด cursorHighlightSprite.color = new color(1f,0.5f,0.5f,0.5f)
         19. ถ้าไม่เป็นไปตามเงื่อนไขในข้อ 9 ให้ cursorInstance.SetActive(false)
         */
-        if(Camera.main == null || cursorInstance == null) return;
-
-        // ถ้าเมาส์อยู่บน UI ให้ซ่อน Cursor และออกจากฟังก์ชันค่ะ
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-        {
-            cursorInstance.SetActive(false);
-            return;
-        }
-
-        Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
-        if(mouseScreenPos.x < 0 || mouseScreenPos.x > Screen.width || mouseScreenPos.y < 0 || mouseScreenPos.y > Screen.height)
-        {
-            cursorInstance.SetActive(false);
-            return;
-        }
         
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(
-            mouseScreenPos.x,mouseScreenPos.y,Camera.main.nearClipPlane
-        ));
-
-        Vector2Int gridPosition = GetGridPosition(new Vector3(
-            mousePosition.x - gridOffset.x, mousePosition.y - gridOffset.y,0f
-        ));
-
-        if(gridPosition.x >= 0 && gridPosition.x < width && gridPosition.y >=0 && gridPosition.y < height)
-        {
-            cursorInstance.SetActive(true);
-            Vector3 cellCenter = new Vector3(
-                (gridPosition.x * cellSize) + gridOffset.x,
-                (gridPosition.y * cellSize) + gridOffset.y,0f
-            );
-
-            cursorInstance.transform.position = cellCenter;
-
-            if(availableBuilding != null && availableBuilding.Length > 0)
-            {
-                BuildingData currentData = availableBuilding[selectedBuildingIndex];
-                GameObject currentBuildingPrefab = currentData.buildingPrefab;
-                SpriteRenderer cursorHighlightSprite = cursorInstance.GetComponent<SpriteRenderer>();
-                SpriteRenderer buildingPrefabSprite = currentBuildingPrefab.GetComponent<SpriteRenderer>();
-
-                if(cursorHighlightSprite != null && buildingPrefabSprite != null)
-                {
-                    cursorHighlightSprite.sprite = buildingPrefabSprite.sprite;
-                }
-
-                ResourceManager resourceManager = FindFirstObjectByType<ResourceManager>();
-
-                bool canPlaceBuilding = IsValidPosition(gridPosition,currentData.buildingSize) && 
-                    (resourceManager != null && resourceManager.gold >= currentData.cost);
-
-                if (canPlaceBuilding)
-                {
-                    cursorHighlightSprite.color = new Color(0.5f,1.0f,0.5f,0.5f);
-                }
-                else
-                {
-                    cursorHighlightSprite.color = new Color(1.0f,0.5f,0.5f,0.5f);
-                }
-            }
-        }
-        else
-        {
-            cursorInstance.SetActive(false);
-        }
-       
 
     }
 
@@ -197,9 +93,8 @@ public class GridManager : MonoBehaviour
         2. ประกาศตัวแปร y เพื่อแปลงค่า y จาก WorldPosition ที่ส่งเข้ามาโดยปัดเศษทิ้ง
         3. คืนค่า x,y แบบ Vector2Int
         */     
-        int x = Mathf.FloorToInt(WorldPosition.x/cellSize);
-        int y = Mathf.FloorToInt(WorldPosition.y/cellSize);
-        return new Vector2Int(x,y);
+        
+        return new Vector2Int(0,0);
 
     }
 
@@ -214,22 +109,6 @@ public class GridManager : MonoBehaviour
             5. ตรวจสอบว่า gridArrayData[currentX, currentY] วางรึเปล่า ถ้าไม่ว่างให้ return ค่า false
             6. ถ้าเช็คใน loop หมดแล้วว่าไม่มีค่า false ก็ให้ return ค่า true
         */
-        for(int x = 0; x < size.x; x++)
-        {
-            for(int y =0; y< size.y; y++)
-            {
-                int currentX = startPos.x + x;
-                int currentY = startPos.y + y;
-                if(currentX < 0 || currentX >= width || currentY < 0 || currentY >= height)
-                {
-                    return false;
-                }
-                if(gridArrayData[currentX,currentY] != null)
-                {
-                    return false;
-                }
-            }
-        }
         
         return true;
     }
@@ -238,7 +117,7 @@ public class GridManager : MonoBehaviour
     public void SelectBuilding(int index)
     {
         /*TODO กำหนดให้ตัวแปร selectedBuildingIndex มีค่าเท่ากับ index*/
-        selectedBuildingIndex = index;
+        
     }
 
     private void CheckMouseClick()
@@ -262,46 +141,7 @@ public class GridManager : MonoBehaviour
             15. เช็คว่าถ้า isRightPress เป็นจริง
             16. เช็คว่า girdPosition ยังอยู่ในกริดรึเปล่า ถ้าอยู่ในกริด ก็ให้เรียกเมธอด DemolishBuilding(gridPosition)
         */ 
-        if(Mouse.current == null) return;
-        bool isLeftPressed = Mouse.current.leftButton.isPressed;
-        bool isRightPressed = Mouse.current.rightButton.isPressed;
-
-        if(!isLeftPressed && !isRightPressed) return;
-
-        // เช็คว่าตำแหน่งที่คลิกอยู่บน UI (เช่น ปุ่มใน Canvas Panel) หรือไม่
-        // ถ้าใช่ ให้หยุดการทำงานทันที ไม่ต้องวางสิ่งก่อสร้างค่ะ
-        if(EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-        {
-            return;
-        }
-
-        Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
-        if(float.IsNaN(mouseScreenPos.x) || float.IsNaN(mouseScreenPos.y)) return;
         
-        if(Camera.main == null)return;
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(
-            mouseScreenPos.x,mouseScreenPos.y,Camera.main.nearClipPlane
-        ));
-
-        Vector2Int gridPosition = GetGridPosition(new Vector3(mousePosition.x - gridOffset.x,
-            mousePosition.y - gridOffset.y,0f));
-        
-        if(gridPosition.x >= 0 && gridPosition.x < width && gridPosition.y >= 0 && gridPosition.y < height)
-        {
-            if(isLeftPressed && !isRightPressed)
-            {
-                BuildingData currentData = availableBuilding[selectedBuildingIndex];
-                if (IsValidPosition(gridPosition, currentData.buildingSize))
-                {
-                    CreateBuilding(gridPosition);
-                }
-            }
-
-            if(isRightPressed && !isLeftPressed)
-            {
-                DemolishBuilding(gridPosition);
-            }
-        }
      
     }
 
@@ -316,141 +156,84 @@ public class GridManager : MonoBehaviour
         5. สร้าง Object ขึ้นมาโดยให้เก็บไว้ที่ตัวแปร newBuilding และ Object ที่สร้างมาก็ต้องอยู่ในตำแหน่ง worldPosition
         6. ตรวจสอบว่า newBuilding มี Component building อยู่ในตัวมันรึเปล่า โดยใช้ TryGetComponent ถ้ามีให้ประกาศตัวแปร b ประเภท 
             building ขึ้นมาเพื่อทำการเชื่อมกับ component building ที่อยู่ใน newBuilding 
-        7. จากนั้นกำหนดค่า incomePerTick ที่อยู่ใน newBuilding ให้เท่ากับ currentData.incomePertick
-        8. จากนั้นกำหนดค่า constructionCost ที่อยู่ใน newBuilding ให้เท่ากับ currentData.cost
+        7. จากนั้นเรียก building.Setup ขึ้นมา เพื่อทำการส่งค่า โดยค่าที่ต้องส่งจะมีตามนี้ 
+            7.1 currentData.incomePerTick อันนี้จะไปเชื่อมกับตัวแปร income ใน class building
+            7.2 currentData.cost อันนี้จะไปเชื่อมกับตัวแปร cost ใน class building
+            7.3 pos อันนี้จะไปเชื่อมกับตัวแปร pos ใน class building
+            7.4 currentData.buildingSize อันนี้จะไปเชื่อมกับตัวแปร size ใน class building
+            7.5 this(ก็คือการชี้กลับมาที่ตัวเอง) อันนี้ไปเชื่อมกับตัวแปร gm ใน class building
         8. สร้าง loop ขึ้นมาตามขนาดของ buildingsize แล้วบันทึกค่าลงใน gridArrayData[pos.x+x,pos.y+y]
-        8. หลังจากบันทึกในลูปเสร็จแล้ว ก็ประกาศ onBuildingPlace ออกไปพร้อมส่งค่า currentData.cost นอกลูป
-        10. ถ้าจากข้อที่ 3 เป็นเท็จให้ Debug ค่าออกมาว่า "เงินไม่พอสร้าง" ตามด้วยชื่อของสิ่งที่จะสร้าง
+        9. หลังจากบันทึกในลูปเสร็จแล้ว ก็ประกาศ onBuildingPlace ออกไปพร้อมส่งค่า currentData.cost นอกลูป
+        10. แจ้งตึกโดยรอบให้เช็คสถานะถนน NotifyNeighbors(pos, currentData.buildingSize)
+        11. ถ้าจากข้อที่ 3 เป็นเท็จให้ Debug ค่าออกมาว่า "เงินไม่พอสร้าง" ตามด้วยชื่อของสิ่งที่จะสร้าง
         */
         
-        BuildingData currentData = availableBuilding[selectedBuildingIndex];
-        ResourceManager resourceManager = FindFirstObjectByType<ResourceManager>();
         
-        if (resourceManager != null && resourceManager.gold >= currentData.cost)
-        {
-            Vector3 worldPosition = new Vector3((pos.x * cellSize) + gridOffset.x, (pos.y * cellSize) + gridOffset.y, 0f);
-            GameObject newBuilding = Instantiate(currentData.buildingPrefab, worldPosition, Quaternion.identity);
-
-            // ตั้งค่าข้อมูลตึก รวมถึงตำแหน่ง และ GridManager Reference
-            if (newBuilding.TryGetComponent(out Building building))
-            {
-                building.Setup(currentData.incomePerTick, currentData.cost, pos, currentData.buildingSize, this);
-            }
-
-            for (int x = 0; x < currentData.buildingSize.x; x++)
-            {
-                for (int y = 0; y < currentData.buildingSize.y; y++)
-                {
-                    gridArrayData[pos.x + x, pos.y + y] = newBuilding;
-                }
-            }
-
-            OnBuildingPlaced?.Invoke(currentData.cost);
-            
-
-            // แจ้งเตือนตึกโดยรอบให้เช็คสถานะถนน
-            NotifyNeighbors(pos, currentData.buildingSize);
-        }
-        else
-        {
-            Debug.Log("เงินไม่พอสร้าง " + currentData.name);
-        }
 
     }
 
     void DemolishBuilding(Vector2Int pos)
     {
         /*TODO LIST
-          1. ตรวจสอบว่า gridArrayData[pos.x,pos.y] เป็นค่าว่างรึเปล่า ถ้าเป็นค่าว่างให้ return ออกไปเลย
-          2. ประกาศตัวแปร buildingToDestroy ประเภท GameObject ขึ้นมาเพิ่มเก็บObjectที่อยู่ใน gridArrayData[pos.x,pos.y]
-          3. ประกาศตัวแปร refundAmount = 0
-          4. เช็คว่า buildingToDestory มีสคลิป Building อยู่รึเปล่า โดยใช้ TryGetComponent ถ้ามีให้ ประกาศตัวแปร b ขึ้นมาเก้บค่าไว้
-          5. กำหนดให้ refundAmount มีค่าเท่ากับ b.constructionCost ÷ 2
-          6. ประกาศตัวแปร resourceManager ขึ้นมาจากนั้นก็อ้างอิงObjectที่แนบสคลิป ResourceManager โดยใช้ FindFirstObjectByType
-          7. เช็คว่า resourceManager ไม่ใช่ค่าว่างเปล่า
-          8. ให้ resourceManager เรียกเมธอด RefundGold(refundAmount)
-          9. สร้างลูป x,y ขึ้นมาโดยให้ x < width และ y < height จากนั้นก็ทำการเช็ค gridArrayData[x,y] ว่ามีObject buildingToDestroy
-             อยู่รึเปล่า ถ้ามีให้ gridArrayData[x,y] นั้น มีค่าเท่ากับ null
-          10. จากนั้นก็ทำการทำลาย Destory(buildingToDestory)
-          11. Debug.Log($"ทุบตึกเรียบร้อย ได้คืน {refundAmount} Gold");    
+            1. ตรวจสอบว่า gridArrayData[pos.x,pos.y] เป็นค่าว่างรึเปล่า ถ้าเป็นค่าว่างให้ return ออกไปเลย
+            2. ประกาศตัวแปร buildingToDestroy ประเภท GameObject ขึ้นมาเพิ่มเก็บObjectที่อยู่ใน gridArrayData[pos.x,pos.y]
+            3. ประกาศตัวแปร refundAmount = 0
+            4. เช็คว่า buildingToDestory มีสคลิป Building อยู่รึเปล่า โดยใช้ TryGetComponent ถ้ามีให้ ประกาศตัวแปร b ขึ้นมาเก้บค่าไว้
+            5. กำหนดให้ refundAmount มีค่าเท่ากับ b.constructionCost ÷ 2
+            6. ประกาศตัวแปร resourceManager ขึ้นมาจากนั้นก็อ้างอิงObjectที่แนบสคลิป ResourceManager โดยใช้ FindFirstObjectByType
+            7. เช็คว่า resourceManager ไม่ใช่ค่าว่างเปล่า
+            8. ให้ resourceManager เรียกเมธอด RefundGold(refundAmount)
+            9. กำหนดค่าตัวแปร minPox(Vector2Int) ให้เก็บค่า width,height อย่าลืม new Vector2Int
+            10. กำหนดค่าตัวแปร maxPos(Vector2Int) ให้เก็บค่า -1,-1 อย่าลืม new Vector2Int 
+                    ที่กำหนดค่า minPox เป็นค่าสูงสุด และ ค่า maxPos เป็นค่าต่ำสุด(ติดลบ) 
+                    เพราะเวลาเข้าลูปแล้วมันจะค่อยๆลดค่าลงไปเรื่อยๆ จนเจอตำแหน่ง
+            11. สร้างลูป x,y ขึ้นมาโดยให้ x < width และ y < height จากนั้นก็ทำการเช็ค gridArrayData[x,y] ว่ามีObject buildingToDestroy
+                อยู่รึเปล่า ถ้ามีให้ gridArrayData[x,y] นั้น มีค่าเท่ากับ null
+            12. จากนั้นกำหนด ค่า minPos.x , minPos.y, maxPos.x, maxPos.x เพื่อให้รู้ขนาดของตึกว่ามีตำแหน่งเริ่มต้นจากพิกัดไหน ไปจนถึงพิกัดไหน
+                12.1 โดยมีเงื่อนไขว่า ถ้า x < minPos.x ให้ minPos.x มีค่าเท่ากับ x
+                12.2 โดยมีเงื่อนไขว่า ถ้า y < minPos.y ให้ minPos.y มีค่าเท่ากับ y
+                12.3 โดยมีเงื่อนไขว่า ถ้า x > maxPos.x ให้ maxPos.x มีค่าเท่ากับ x
+                12.4 โดยมีเงื่อนไขว่า ถ้า y > maxPos.y ให้ maxPos.y มีค่าเท่ากับ y
+            13. จากนั้นก็ทำการทำลาย Destory(buildingToDestory)
+            14. Debug.Log($"ทุบตึกเรียบร้อย ได้คืน {refundAmount} Gold");
+            15. แจ้งเตือนอาคารรอบข้างที่อยู่ติดกับสิ่งก่อสร้างนี้ โดยทำการเช็คก่อนว่า maxPos.x >= 0 และ maxPos.y >=0
+                15.1 จากนั้นก็กำหนดตัวแปร size(vector2int) ให้มีค่าเท่ากับ maxPos.x - minPos.x + 1, maxPos.y - minPos.y + 1
+                15.2 จากนั้นเรียก method NotifyNeighbors(minPos,size) เพื่อแจ้งเตือนตึกรอบๆ     
   
         */
-        if(gridArrayData[pos.x,pos.y] == null)return;
-        GameObject buildingToDestroy = gridArrayData[pos.x,pos.y];
-        int refundAmount = 0;
-        if(buildingToDestroy.TryGetComponent(out Building building))
-        {
-            refundAmount = building.constructionCost / 2;
-        }
-
-        ResourceManager resourceManager = FindFirstObjectByType<ResourceManager>();
-        if(resourceManager != null)
-        {
-            resourceManager.RefundGold(refundAmount);
-        }
-
-        // หาขนาดขอบเขตของตึกที่ถูกทุบเพื่อแจ้งเตือนช่องรอบข้างอย่างถูกต้อง
-        Vector2Int minPos = new Vector2Int(width, height);
-        Vector2Int maxPos = new Vector2Int(-1, -1);
-
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                if (gridArrayData[x, y] == buildingToDestroy)
-                {
-                    gridArrayData[x, y] = null;
-                    
-                    if (x < minPos.x) minPos.x = x;
-                    if (y < minPos.y) minPos.y = y;
-                    if (x > maxPos.x) maxPos.x = x;
-                    if (y > maxPos.y) maxPos.y = y;
-                }
-            }
-        }
-
-        Destroy(buildingToDestroy);
-        Debug.Log($"ทุบตึกเรียบร้อย ได้คืน {refundAmount} Gold");
-
-        // แจ้งเตือนอาคารรอบข้างที่เคยอยู่ติดกับตึกนี้
-        if (maxPos.x >= 0 && maxPos.y >= 0)
-        {
-            Vector2Int size = new Vector2Int(maxPos.x - minPos.x + 1, maxPos.y - minPos.y + 1);
-            NotifyNeighbors(minPos, size);
-        }
+        
         
 
     }
 
     public GameObject GetBuildingAt(Vector2Int pos)
     {
-        if (pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height)
-        {
-            return gridArrayData[pos.x, pos.y];
-        }
+        /*TODO LIST (เมธอดนี้เอาไว้บอกว่าในตำแหน่งที่ส่งเข้ามานั้นมีสิ่งใดอยู่)
+            1. เช็คว่า pos.x(ตำแหน่งที่ส่งเข้ามา) มีค่ามากกว่าหรือเท่ากับ 0 และ pos.x มีค่าน้อยกว่า width และ pos.y มีค่ามากกว่า
+                หรือเท่ากับ 0 และ pos.y มีค่าน้อยกว่า height 
+            2. ถ้าเงื่อนไขเป็นจริงให้ส่ง object ที่อยู่ ใน gridArrayData[pos.x, pos.y] ออกไป
+            3. จากนั้นก็ return ค่า null ออกไป
+        */
+        
         return null;
     }
 
-    // ฟังก์ชันกระจายการแจ้งเตือนไปยังตึกโดยรอบเพื่ออัปเดตการเชื่อมต่อถนน
     private void NotifyNeighbors(Vector2Int startPos, Vector2Int size)
     {
+        /*TODO LIST (ฟังก์ชันกระจายการแจ้งเตือนไปยังตึกโดยรอบเพื่ออัปเดตการเชื่อมต่อถนน)
+            1. ทำการเข้าลูป โดยกำหนดให้ค่า x มีค่าเท่ากับ -1 เพื่อเริ่มเช็คตั้งแต่นอกขอบเลย ถ้า x น้อยกว่าหรือเท่ากับ ค่า size.x ที่ส่งเข้ามา
+                ให้เพิ่มค่า x
+            2. จากนั้นก็เข้าลูปซ้อน โดยกำหนดให้ค่า y มีค่าเท่ากับ -1 ถ้าค่า y น้อยกว่าหรือเท่ากับ ค่า size.y ให้เพิ่มค่า y
+            3. สร้างตัวแปร isOutSide(bool) โดยเช็คว่าตำแหน่งเหล่านั้นอยู่นอกขอบตึกรึเปล่า โดยให้มีค่าเท่ากับ
+                เมื่อ x มีค่าเท่ากับ -1 หรือ x มีค่าเท่ากับ size.x หรือ y มีค่าเท่ากับ -1 หรือ y มีค่าเท่ากับ size.y
+            4. ถ้าค่า isOutside เป็นจริง
+                4.1 กำหนดค่า checkPos(vector2int) มีค่าเท่าก startPos.x + x, startPos.y +y อย่าลืม new Vector2int ด้วย
+                4.2 กำหนดค่า obj(GameObject) ให้มีค่าเท่ากับค่าที่ GetBuildingAt(checkPos) ส่งกลับมา
+                4.3 ถ้า Obj ไม่ใช่ค่าว่าง และ obj มีคลาส Building อยู่ ก็ให้สร้างตัวแปร b(building)ขึ้นมา โดยใช้ TryGetComponent
+                    4.3.1 แล้วก็ให้ b เรียก CheckRoadConnection() ขึ้นมา [b.CheckRoadConnection();]
+        */
         
-        for (int x = -1; x <= size.x; x++)
-        {
-            for (int y = -1; y <= size.y; y++)
-            {
-                bool isOutside = (x == -1 || x == size.x || y == -1 || y == size.y);
-                if (isOutside)
-                {
-                    Vector2Int checkPos = new Vector2Int(startPos.x + x, startPos.y + y);
-                    GameObject obj = GetBuildingAt(checkPos);
-                    if (obj != null && obj.TryGetComponent(out Building b))
-                    {
-                        b.CheckRoadConnection();
-                    }
-                }
-            }
-        }
+        
     }
 
 }

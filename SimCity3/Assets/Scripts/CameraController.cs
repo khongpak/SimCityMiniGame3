@@ -50,18 +50,7 @@ public class CameraController : MonoBehaviour
             จากนั้นก็ให้คูณเวกเตอร์ด้วย movespeed และ คูณด้วย Time.deltaTime
         8. ใช้ transform.Translate(move, Space.World) เพื่อค่อยๆเพิ่มค่า x หรือ y โดยอ้างอิงกับแกน x,y,z ของโลก
         */
-        float x = 0f;
-        float y = 0f;
-
-        if(Keyboard.current == null) return;
-
-        if(Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) x = -1f;
-        if(Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) x = 1f;
-        if(Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed) y = 1f;
-        if(Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed) y = -1f;
-
-        Vector3 move = new Vector3(x,y,0) * moveSpeed * Time.deltaTime;
-        transform.Translate(move,Space.World);
+        
     
     }
 
@@ -75,13 +64,6 @@ public class CameraController : MonoBehaviour
         5. กำหนดให้ค่า cam.orthographicSize มีค่าต่ำสุดเท่ากับ minZoom และ ค่าสูงสุดเท่ากับ maxZoom โดยใช้ Mathf.Clamp
         */
 
-        if(Mouse.current == null) return;
-        float scrollValue = Mouse.current.scroll.ReadValue().y;
-        if(scrollValue != 0)
-        {
-            cam.orthographicSize -= scrollValue * 0.01f * zoomSpeed;
-            cam.orthographicSize = Mathf.Clamp(cam.orthographicSize,minZoom,maxZoom);
-        }
-        
+       
     }
 }
